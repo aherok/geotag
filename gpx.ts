@@ -19,7 +19,7 @@ export function findCoordinates(gpxData: GPX, targetTime: Date) {
       for (const segment of track.trkseg) {
         for (const point of segment.trkpt) {
           const pointTime = new Date(point.time)
-          const timeDiff = Math.abs(targetTime - pointTime);
+          const timeDiff = Math.abs(targetTime.valueOf() - pointTime.valueOf());
 
           if (timeDiff < minDistance) {
             closestWaypoint = point;
