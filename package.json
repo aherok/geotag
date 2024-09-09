@@ -6,9 +6,11 @@
   "dependencies": {
     "exifr": "^7.1.3",
     "exiftool-vendored": "^28.2.1",
-    "gpx-parser-builder": "^1.1.1"
+    "gpx-parser-builder": "^1.1.1",
+    "yargs": "^17.7.2"
   },
   "devDependencies": {
+    "@types/yargs": "^17.0.33",
     "tsx": "^4.19.0"
   },
   "scripts": {
