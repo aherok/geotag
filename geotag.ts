@@ -23,10 +23,11 @@ async function getGPXFiles(dir: string) {
 }
 
 // Main function to geotag files
-async function geotagFiles(imageDirectory: string, onlyNew: boolean, approxHours) {
+async function geotagFiles(imageDirectory: string, gpxDir:string, onlyNew: boolean, approxHours) {
   console.log(`Starting geotagger...
- * Working dir:${imageDirectory}
- * approxHours=${approxHours}
+ * Working dir : ${imageDirectory}
+ * GPX dir     : ${gpxDir}
+ * approxHours : ${approxHours}
 `)
 
   try {
@@ -35,11 +36,11 @@ async function geotagFiles(imageDirectory: string, onlyNew: boolean, approxHours
     console.log(`Found ${imageFiles.length} photos to process...`)
 
     // Read all GPX files in the same directory as the images
-    const gpxFiles = await getGPXFiles(imageDirectory)
+    const gpxFiles = await getGPXFiles(gpxDir)
     console.log(`Found ${gpxFiles.length} GPX files...`)
 
     // // Load GPX data from all GPX files
-    const gpxData = await loadGPXFiles(gpxFiles.map(f => path.join(imageDirectory, f)))
+    const gpxData = await loadGPXFiles(gpxFiles.map(f => path.join(gpxDir, f)))
 
     console.log("Parsed GPX files. Starting processing photos...")
 
@@ -93,10 +94,11 @@ const argv = yargs(hideBin(process.argv)).argv
 const imageDirectory = argv['_'][0]
 const onlyNew: boolean = !!argv['onlyNew']
 const approxHours: number = argv['approxHours'] || 0
+const gpxDir: string = argv['gpxDir'] || imageDirectory
 
 if (!imageDirectory) {
   console.error('\n\n! Please provide an image directory as an argument.\n\n');
   process.exit(1);
 }
 
-geotagFiles(imageDirectory, onlyNew, approxHours);
+geotagFiles(imageDirectory, gpxDir, onlyNew, approxHours);
