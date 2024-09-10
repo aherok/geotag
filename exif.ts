@@ -1,5 +1,5 @@
 import exifr from 'exifr';
-import { ExifTool } from 'exiftool-vendored';
+import { ExifTool, Tags } from 'exiftool-vendored';
 
 type Coords = {
   lat: number,
@@ -29,7 +29,17 @@ export async function getImageCoords(imagePath: string): Promise<SimpleCoords | 
   return null
 }
 
-export async function saveImageCoords(imagePath: string, coords: Coords, exiftool: ExifTool) {
+export async function saveImageCoords(imagePath: string, coords: Coords, creationDate: Date, exiftool: ExifTool) {
   // console.info(` + Writing coords to file ${imagePath} [${coords.lat}] ...`)
-  return exiftool.write(imagePath, { GPSLatitude: coords.lat, GPSLongitude: coords.lon })
+  const data: Tags = {
+    GPSLatitude: coords.lat,
+    GPSLatitudeRef: coords.lat > 0 ? 'North' : 'South',
+    GPSLongitude: coords.lon,
+    GPSLongitudeRef: coords.lat > 0 ? 'East' : 'West',
+    GPSDateStamp: creationDate.toISOString(),
+    GPSTimeStamp: creationDate.toISOString(),
+    GPSProcessingMethod: 'GPS',
+    GPSAltitudeRef: "0",
+  }
+  return exiftool.write(imagePath, data)
 }

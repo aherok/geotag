@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { getImageCoords, getImageCreationDate, saveImageCoords } from './exif';
 import { exiftool } from 'exiftool-vendored';
-import { findCoordinates, loadGPX } from './gpx';
+import { findCoordinates, loadGPXFiles } from './gpx';
 import yargs from 'yargs/yargs';
 import { hideBin } from 'yargs/helpers';
 
@@ -23,7 +23,12 @@ async function getGPXFiles(dir: string) {
 }
 
 // Main function to geotag files
-async function geotagFiles(imageDirectory: string, onlyNew: boolean, defaultCoords?: Coords | null) {
+async function geotagFiles(imageDirectory: string, onlyNew: boolean, approxHours) {
+  console.log(`Starting geotagger...
+ * Working dir:${imageDirectory}
+ * approxHours=${approxHours}
+`)
+
   try {
     // Read all GPX files in the same directory as the images
     const imageFiles = await getImages(imageDirectory)
@@ -34,7 +39,7 @@ async function geotagFiles(imageDirectory: string, onlyNew: boolean, defaultCoor
     console.log(`Found ${gpxFiles.length} GPX files...`)
 
     // // Load GPX data from all GPX files
-    const gpxData = await Promise.all(gpxFiles.map(gpxFile => loadGPX(path.join(imageDirectory, gpxFile))));
+    const gpxData = await loadGPXFiles(gpxFiles.map(f => path.join(imageDirectory, f)))
 
     console.log("parsed GPX. start processing photos")
 
@@ -53,10 +58,10 @@ async function geotagFiles(imageDirectory: string, onlyNew: boolean, defaultCoor
       if (!imageCoords || !onlyNew) {
 
         // Find coordinates for the creation date in GPX data
-        const coordinates = findCoordinates(gpxData, creationDate as Date);
+        const coordinates = findCoordinates(gpxData, creationDate as Date, approxHours);
 
         if (coordinates) {
-          await saveImageCoords(imagePath, coordinates.location, exiftool)
+          await saveImageCoords(imagePath, coordinates.location, creationDate, exiftool)
           updatedList.push(imagePath)
         } else {
           console.log(`Coords not found for file:\n - ${imagePath}\n - ${creationDate.toISOString()}`)
@@ -84,6 +89,8 @@ const argv = yargs(hideBin(process.argv)).argv
 const imageDirectory = argv['_'][0]
 const defaultCoordsArg: string = argv['defaultCoords']
 const onlyNew: boolean = !!argv['onlyNew']
+const approxHours: number = argv['approxHours'] || 0
+
 let defaultCoords: Coords | null = null;
 
 if (!imageDirectory) {
@@ -99,4 +106,4 @@ if (defaultCoords) {
   console.error('\n\n! --defaultCoords not implemented yet. Turn it off.\n\n');
   process.exit(1);
 }
-geotagFiles(imageDirectory, onlyNew, defaultCoords);
+geotagFiles(imageDirectory, onlyNew, approxHours);
