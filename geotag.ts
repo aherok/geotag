@@ -41,7 +41,7 @@ async function geotagFiles(imageDirectory: string, onlyNew: boolean, approxHours
     // // Load GPX data from all GPX files
     const gpxData = await loadGPXFiles(gpxFiles.map(f => path.join(imageDirectory, f)))
 
-    console.log("parsed GPX. start processing photos")
+    console.log("Parsed GPX files. Starting processing photos...")
 
     const unchangedList: string[] = []
     const updatedList: string[] = []
@@ -54,7 +54,7 @@ async function geotagFiles(imageDirectory: string, onlyNew: boolean, approxHours
       const creationDate = await getImageCreationDate(imagePath)
       const imageCoords = await getImageCoords(imagePath)
 
-      // save new coords only if there are no coords already and the onlyNew flag is false
+      // save new coords only if there are no coords already or the onlyNew flag is false
       if (!imageCoords || !onlyNew) {
 
         // Find coordinates for the creation date in GPX data
@@ -64,23 +64,27 @@ async function geotagFiles(imageDirectory: string, onlyNew: boolean, approxHours
           await saveImageCoords(imagePath, coordinates.location, creationDate, exiftool)
           updatedList.push(imagePath)
         } else {
-          console.log(`Coords not found for file:\n - ${imagePath}\n - ${creationDate.toISOString()}`)
+          // console.log(`Coords not found for file:\n - ${imagePath}\n - ${creationDate.toISOString()}`)
           notFoundCoordsList.push(imagePath)
         }
       }
       if (imageCoords && onlyNew) {
         // opposite
-        console.info("Corrds found in file, omitting...")
+        unchangedList.push(imagePath)
       }
     }
 
-    console.log(`Updated ${updatedList.length} files. Not found: ${notFoundCoordsList.length}`)
+    if(notFoundCoordsList.length){
+      console.log(`\nFiles with no found coordinates:\n  - ${notFoundCoordsList.join('\n  - ')}\n`)
+    }
+
+    console.log(`Updated ${updatedList.length} files. 
+Not found coordinates for: ${notFoundCoordsList.length} files.`)
 
 
   } catch (error) {
     console.error('Error:', error);
   } finally {
-    console.log("ending Exiftool")
     exiftool.end()
   }
 }

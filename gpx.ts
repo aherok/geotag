@@ -125,7 +125,6 @@ export function findCoordinates(gpxData: ParsedGPXData[], targetTime: Date, appr
     // console.log(`approx=${approxHours}, minDistance=${minDistance}, `)
 
     if (minDistance <= (2000 + approxHours * 60 * 60 * 1000)) {
-      console.log("=saving")
       return {
         location: closestWaypoint.$,
         timeDiff: minDistance
