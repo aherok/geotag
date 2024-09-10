@@ -5,6 +5,7 @@ import { exiftool } from 'exiftool-vendored';
 import { findCoordinates, loadGPXFiles } from './gpx';
 import yargs from 'yargs/yargs';
 import { hideBin } from 'yargs/helpers';
+import cliProgress from 'cli-progress'
 
 type Coords = {
   lat: number,
@@ -23,7 +24,7 @@ async function getGPXFiles(dir: string) {
 }
 
 // Main function to geotag files
-async function geotagFiles(imageDirectory: string, gpxDir:string, onlyNew: boolean, approxHours) {
+async function geotagFiles(imageDirectory: string, gpxDir: string, onlyNew: boolean, approxHours) {
   console.log(`Starting geotagger...
  * Working dir : ${imageDirectory}
  * GPX dir     : ${gpxDir}
@@ -47,6 +48,9 @@ async function geotagFiles(imageDirectory: string, gpxDir:string, onlyNew: boole
     const unchangedList: string[] = []
     const updatedList: string[] = []
     const notFoundCoordsList: string[] = []
+
+    const bar = new cliProgress.SingleBar({}, cliProgress.Presets.shades_grey);
+    bar.start(imageFiles.length, 0);
 
     // Iterate through image files
     for (const imageFile of imageFiles) {
@@ -73,7 +77,9 @@ async function geotagFiles(imageDirectory: string, gpxDir:string, onlyNew: boole
         // opposite
         unchangedList.push(imagePath)
       }
+      bar.increment()
     }
+    bar.stop();
 
     if (notFoundCoordsList.length) {
       console.log(`\nFiles with no found coordinates:\n  - ${notFoundCoordsList.join('\n  - ')}\n`)
