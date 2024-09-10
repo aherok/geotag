@@ -74,7 +74,7 @@ async function geotagFiles(imageDirectory: string, onlyNew: boolean, approxHours
       }
     }
 
-    if(notFoundCoordsList.length){
+    if (notFoundCoordsList.length) {
       console.log(`\nFiles with no found coordinates:\n  - ${notFoundCoordsList.join('\n  - ')}\n`)
     }
 
@@ -91,23 +91,12 @@ Not found coordinates for: ${notFoundCoordsList.length} files.`)
 
 const argv = yargs(hideBin(process.argv)).argv
 const imageDirectory = argv['_'][0]
-const defaultCoordsArg: string = argv['defaultCoords']
 const onlyNew: boolean = !!argv['onlyNew']
 const approxHours: number = argv['approxHours'] || 0
-
-let defaultCoords: Coords | null = null;
 
 if (!imageDirectory) {
   console.error('\n\n! Please provide an image directory as an argument.\n\n');
   process.exit(1);
 }
-if (defaultCoordsArg) {
-  const spl = defaultCoordsArg.split(',')
-  defaultCoords = { lat: parseFloat(spl[0]), lon: parseFloat(spl[1]) }
-}
 
-if (defaultCoords) {
-  console.error('\n\n! --defaultCoords not implemented yet. Turn it off.\n\n');
-  process.exit(1);
-}
 geotagFiles(imageDirectory, onlyNew, approxHours);
