@@ -1,7 +1,7 @@
 import exifr from 'exifr';
 import { ExifTool, Tags } from 'exiftool-vendored';
 
-type Coords = {
+export type Coords = {
   lat: number,
   lon: number
 }

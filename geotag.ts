@@ -1,16 +1,12 @@
 import fs from 'fs';
 import path from 'path';
-import { getImageCoords, getImageCreationDate, saveImageCoords } from './exif';
+import { Coords, getImageCoords, getImageCreationDate, saveImageCoords } from './exif';
 import { exiftool } from 'exiftool-vendored';
 import { findCoordinates, loadGPXFiles } from './gpx';
 import yargs from 'yargs/yargs';
 import { hideBin } from 'yargs/helpers';
 import cliProgress from 'cli-progress'
 
-type Coords = {
-  lat: number,
-  lon: number
-}
 
 const allowedExtensions = ['.jpg', '.jpeg', '.dng', '.arw'];
 
@@ -24,11 +20,12 @@ async function getGPXFiles(dir: string) {
 }
 
 // Main function to geotag files
-async function geotagFiles(imageDirectory: string, gpxDir: string, onlyNew: boolean, approxHours) {
+async function geotagFiles(imageDirectory: string, gpxDir: string, onlyNew: boolean, approxHours, defaultCoords?: Coords) {
   console.log(`Starting geotagger...
- * Working dir : ${imageDirectory}
- * GPX dir     : ${gpxDir}
- * approxHours : ${approxHours}
+ * Working dir   : ${imageDirectory}
+ * GPX dir       : ${gpxDir}
+ * approxHours   : ${approxHours}
+ * defaultCoords : [${defaultCoords?.lat},${defaultCoords?.lon}]
 `)
 
   try {
@@ -48,6 +45,7 @@ async function geotagFiles(imageDirectory: string, gpxDir: string, onlyNew: bool
     const unchangedList: string[] = []
     const updatedList: string[] = []
     const notFoundCoordsList: string[] = []
+    const saveDefaultList: string[] = []
 
     const bar = new cliProgress.SingleBar({}, cliProgress.Presets.shades_grey);
     bar.start(imageFiles.length, 0);
@@ -70,7 +68,14 @@ async function geotagFiles(imageDirectory: string, gpxDir: string, onlyNew: bool
           updatedList.push(imagePath)
         } else {
           // console.log(`Coords not found for file:\n - ${imagePath}\n - ${creationDate.toISOString()}`)
-          notFoundCoordsList.push(imagePath)
+
+          if (defaultCoords) {
+            await saveImageCoords(imagePath, defaultCoords, creationDate, exiftool)
+            saveDefaultList.push(imagePath)
+          } else {
+            notFoundCoordsList.push(imagePath)
+
+          }
         }
       }
       if (imageCoords && onlyNew) {
@@ -84,9 +89,11 @@ async function geotagFiles(imageDirectory: string, gpxDir: string, onlyNew: bool
     if (notFoundCoordsList.length) {
       console.log(`\nFiles with no found coordinates:\n  - ${notFoundCoordsList.join('\n  - ')}\n`)
     }
+    if (saveDefaultList.length) {
+      console.log(`\nSaved default coordinates:\n  - ${saveDefaultList.join('\n  - ')}\n`)
+    }
 
-    console.log(`Updated ${updatedList.length} files. 
-Not found coordinates for: ${notFoundCoordsList.length} files.`)
+    console.log(`Updated ${updatedList.length} files.`)
 
 
   } catch (error) {
@@ -100,6 +107,7 @@ const argv = yargs(hideBin(process.argv)).argv
 const imageDirectory = argv['_'][0]
 const onlyNew: boolean = !!argv['onlyNew']
 const approxHours: number = argv['approxHours'] || 0
+const defaultCoordsArg: string = argv['defaultCoords']
 const gpxDir: string = argv['gpxDir'] || imageDirectory
 
 if (!imageDirectory) {
@@ -107,4 +115,15 @@ if (!imageDirectory) {
   process.exit(1);
 }
 
-geotagFiles(imageDirectory, gpxDir, onlyNew, approxHours);
+let defaultCoords: Coords
+if (defaultCoordsArg) {
+  try {
+    const [lat, lon] = defaultCoordsArg.split(',').map(parseFloat)
+    defaultCoords = { lat, lon }
+  } catch (err) {
+    console.error("Could not parse defaultCoords param: ", err)
+  }
+}
+
+
+geotagFiles(imageDirectory, gpxDir, onlyNew, approxHours, defaultCoords!);
