@@ -21,11 +21,12 @@ async function getGPXFiles(dir: string) {
 
 // Main function to geotag files
 async function geotagFiles(imageDirectory: string, gpxDir: string, onlyNew: boolean, precision, defaultCoords?: Coords) {
+  const coordsPrint = defaultCoords && defaultCoords.lat + ',' + defaultCoords.lon || '(?)'
   console.log(`Starting geotagger...
  * Working dir   : ${imageDirectory}
  * GPX dir       : ${gpxDir}
  * precision     : ${precision}
- * defaultCoords : [${defaultCoords?.lat},${defaultCoords?.lon}]
+ * defaultCoords : ${coordsPrint}
 `)
 
   try {
@@ -103,11 +104,42 @@ async function geotagFiles(imageDirectory: string, gpxDir: string, onlyNew: bool
   }
 }
 
-const argv = yargs(hideBin(process.argv)).argv
+const argv = yargs(hideBin(process.argv))
+  .usage('Usage: $0 <image-directory> --gpxDir <gpx_dir_name> --onlyNew <true|false> --precision <seconds> --defaultCoords <lat,lon>')
+  .example([
+    ['$0 ~/photos/', 'geotag all images in the specified dir using the GPX files found there.'],
+    ['$0 ~/photos/ --only-new 1 --gpx-dir ~/gpx/ --precision 3600 --default-coords 18.2,50,5', 'Fully fledged example']
+  ])
+  .options({
+    'gpx-dir': {
+      default: null,
+      describe: 'Specify where to look for source GPX files. If none specified, the images directory will be searched through.'
+    },
+    'only-new': {
+      default: false,
+      describe: 'If true, the script will omit images that already contain geo data.',
+      type: 'boolean'
+    },
+    'precision': {
+      default: 60,
+      describe: 'Specify the time difference (in seconds) between the image timestamp and GPX timestamps to be still acceptable.',
+    },
+    'default-coords': {
+      default: null,
+      describe: 'Coordinates to set if not found in any GPX file. Treat it as a last resort or when you want to manually set the coordinates.',
+      coerce: coords => {
+        if (!coords) return null
+        const [lat, lon] = coords.split(',').map(parseFloat)
+        return { lat, lon }
+      }
+    },
+  })
+  .argv
+
 const imageDirectory = argv['_'][0]
-const onlyNew: boolean = !!argv['onlyNew']
-const precision: number = argv['precision'] || 60
-const defaultCoordsArg: string = argv['defaultCoords']
+const onlyNew: boolean = argv['onlyNew']
+const precision: number = argv['precision']
+const defaultCoords = argv['defaultCoords']
 const gpxDir: string = argv['gpxDir'] || imageDirectory
 
 if (!imageDirectory) {
@@ -115,19 +147,9 @@ if (!imageDirectory) {
   process.exit(1);
 }
 
-let defaultCoords: Coords
-if (defaultCoordsArg) {
-  try {
-    const [lat, lon] = defaultCoordsArg.split(',').map(parseFloat)
-    defaultCoords = { lat, lon }
-  } catch (err) {
-    console.error("Could not parse defaultCoords param: ", err)
-  }
-}
-
-if(precision<60){
+if (precision < 60) {
   console.info(`\nNOTICE: Setting the precision to a value lower than 1 minute (${precision} secs) may result 
 in lower effectiveness.\n`)
 }
 
-geotagFiles(imageDirectory, gpxDir, onlyNew, precision, defaultCoords!);
+geotagFiles(imageDirectory, gpxDir, onlyNew, precision, defaultCoords);
