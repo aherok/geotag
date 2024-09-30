@@ -67,7 +67,7 @@ export async function loadGPXFiles(paths: string[]): Promise<ParsedGPXData[]> {
 }
 
 // Function to find coordinates for a given date in GPX data
-export function findCoordinates(gpxData: ParsedGPXData[], targetTime: Date, approxHours: number) {
+export function findCoordinates(gpxData: ParsedGPXData[], targetTime: Date, precision: number) {
   let closestWaypoint: Waypoint | null = null;
   let minDistance = Infinity;
   let currentFile: ParsedGPXData;
@@ -77,13 +77,13 @@ export function findCoordinates(gpxData: ParsedGPXData[], targetTime: Date, appr
   for (const gpxFile of gpxData) {
 
     // omit GPX file if the targetDate is not between GPX dates
-    // the dates are expanded to the `approxHours` hours
+    // the dates are expanded to the `precision` seconds
     const startDate = new Date(gpxFile.$$.startDate)
     const endDate = new Date(gpxFile.$$.endDate)
 
-    if (approxHours > 0) {
-      startDate.setUTCHours(startDate.getUTCHours() - approxHours);
-      endDate.setUTCHours(endDate.getUTCHours() + approxHours);
+    if (precision > 0) {
+      startDate.setUTCSeconds(startDate.getUTCSeconds() - precision);
+      endDate.setUTCSeconds(endDate.getUTCSeconds() + precision);
     }
 
     // console.log(` -- Check inside: ${gpxFile.$$.name}
@@ -122,9 +122,7 @@ export function findCoordinates(gpxData: ParsedGPXData[], targetTime: Date, appr
     // @TODO add a condition to return only the same dated values
     // return only if time distance is acceptably small (+2secs)
 
-    // console.log(`approx=${approxHours}, minDistance=${minDistance}, `)
-
-    if (minDistance <= (2000 + approxHours * 60 * 60 * 1000)) {
+    if (minDistance <= (precision * 1000)) {
       return {
         location: closestWaypoint.$,
         timeDiff: minDistance

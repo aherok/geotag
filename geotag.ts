@@ -20,11 +20,11 @@ async function getGPXFiles(dir: string) {
 }
 
 // Main function to geotag files
-async function geotagFiles(imageDirectory: string, gpxDir: string, onlyNew: boolean, approxHours, defaultCoords?: Coords) {
+async function geotagFiles(imageDirectory: string, gpxDir: string, onlyNew: boolean, precision, defaultCoords?: Coords) {
   console.log(`Starting geotagger...
  * Working dir   : ${imageDirectory}
  * GPX dir       : ${gpxDir}
- * approxHours   : ${approxHours}
+ * precision     : ${precision}
  * defaultCoords : [${defaultCoords?.lat},${defaultCoords?.lon}]
 `)
 
@@ -61,7 +61,7 @@ async function geotagFiles(imageDirectory: string, gpxDir: string, onlyNew: bool
       if (!imageCoords || !onlyNew) {
 
         // Find coordinates for the creation date in GPX data
-        const coordinates = findCoordinates(gpxData, creationDate as Date, approxHours);
+        const coordinates = findCoordinates(gpxData, creationDate as Date, precision);
 
         if (coordinates) {
           await saveImageCoords(imagePath, coordinates.location, creationDate, exiftool)
@@ -106,7 +106,7 @@ async function geotagFiles(imageDirectory: string, gpxDir: string, onlyNew: bool
 const argv = yargs(hideBin(process.argv)).argv
 const imageDirectory = argv['_'][0]
 const onlyNew: boolean = !!argv['onlyNew']
-const approxHours: number = argv['approxHours'] || 0
+const precision: number = argv['precision'] || 60
 const defaultCoordsArg: string = argv['defaultCoords']
 const gpxDir: string = argv['gpxDir'] || imageDirectory
 
@@ -125,5 +125,9 @@ if (defaultCoordsArg) {
   }
 }
 
+if(precision<60){
+  console.info(`\nNOTICE: Setting the precision to a value lower than 1 minute (${precision} secs) may result 
+in lower effectiveness.\n`)
+}
 
-geotagFiles(imageDirectory, gpxDir, onlyNew, approxHours, defaultCoords!);
+geotagFiles(imageDirectory, gpxDir, onlyNew, precision, defaultCoords!);
