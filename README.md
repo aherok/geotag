@@ -51,9 +51,10 @@ Full-fledged example.
 * do not modify files that already contain geolocation data
 * allow for 1hr `precision` when looking for precise timestamp
 * if not found particular timestamp, use the default coordinates
+* remove backup files (that are created by default)
 
 ``` cmd
-geotag ~/photos/ --gpx-dir ~/gpx/ --only-new 1 --precision 3600 --default-coords 18.2,50,5
+geotag ~/photos/ --gpx-dir ~/gpx/ --only-new 1 --precision 3600 --default-coords 18.2,50,5 --remove-original 1
 ```
 
 ## Contributing

@@ -3,7 +3,7 @@
 import fs from 'fs';
 import path from 'path';
 import { Coords, getImageCoords, getImageCreationDate, saveImageCoords } from './exif';
-import { exiftool } from 'exiftool-vendored';
+import { ExifTool } from 'exiftool-vendored';
 import { findCoordinates, loadGPXFiles } from './gpx';
 import yargs from 'yargs/yargs';
 import { hideBin } from 'yargs/helpers';
@@ -22,14 +22,18 @@ async function getGPXFiles(dir: string) {
 }
 
 // Main function to geotag files
-async function geotagFiles(imageDirectory: string, gpxDir: string, onlyNew: boolean, precision: number, defaultCoords: Coords) {
+async function geotagFiles(imageDirectory: string, gpxDir: string, onlyNew: boolean, precision: number, defaultCoords: Coords, removeOriginal: boolean) {
   const coordsPrint = defaultCoords && defaultCoords.lat + ',' + defaultCoords.lon || '(?)'
   console.log(`Starting geotagger...
- * Working dir   : ${imageDirectory}
- * GPX dir       : ${gpxDir}
- * precision     : ${precision}
- * defaultCoords : ${coordsPrint}
+ * Working dir    : ${imageDirectory}
+ * GPX dir        : ${gpxDir}
+ * precision      : ${precision}
+ * defaultCoords  : ${coordsPrint}
+ * removeOriginal : ${removeOriginal}
 `)
+
+  const opts = removeOriginal ? { 'writeArgs': ['-overwrite_original'] } : {}
+  const et = new ExifTool(opts)
 
   try {
     // Read all GPX files in the same directory as the images
@@ -67,13 +71,13 @@ async function geotagFiles(imageDirectory: string, gpxDir: string, onlyNew: bool
         const coordinates = findCoordinates(gpxData, creationDate as Date, precision);
 
         if (coordinates) {
-          await saveImageCoords(imagePath, coordinates.location, creationDate, exiftool)
+          await saveImageCoords(imagePath, coordinates.location, creationDate, et)
           updatedList.push(imagePath)
         } else {
           // console.log(`Coords not found for file:\n - ${imagePath}\n - ${creationDate.toISOString()}`)
 
           if (defaultCoords) {
-            await saveImageCoords(imagePath, defaultCoords, creationDate, exiftool)
+            await saveImageCoords(imagePath, defaultCoords, creationDate, et)
             saveDefaultList.push(imagePath)
           } else {
             notFoundCoordsList.push(imagePath)
@@ -102,7 +106,7 @@ async function geotagFiles(imageDirectory: string, gpxDir: string, onlyNew: bool
   } catch (error) {
     console.error('Error:', error);
   } finally {
-    exiftool.end()
+    et.end()
   }
 }
 
@@ -135,14 +139,20 @@ const argv = yargs(hideBin(process.argv))
         return { lat, lon } as Coords
       }
     },
+    'remove-original': {
+      alias: 'rm',
+      default: false,
+      describe: 'By default, Exiftool keeps the original file copy by appending `_original` to the file name. If set to true, the copy will not be created.'
+    }
   })
   .parseSync();
 
 const imageDirectory: string = argv['_'][0] as string
-const onlyNew: boolean = argv['onlyNew']
+const onlyNew: boolean = !!argv['onlyNew']
 const precision: number = argv['precision']
 const defaultCoords = argv['defaultCoords']
 const gpxDir: string = argv['gpxDir'] || imageDirectory
+const removeOriginal: boolean = !!argv['removeOriginal']
 
 if (!imageDirectory) {
   console.error('\n\n! Please provide an image directory as an argument.\n\n');
@@ -154,4 +164,4 @@ if (precision < 60) {
 in lower effectiveness.\n`)
 }
 
-geotagFiles(imageDirectory, gpxDir, onlyNew, precision, defaultCoords!);
+geotagFiles(imageDirectory, gpxDir, onlyNew, precision, defaultCoords!, removeOriginal);
