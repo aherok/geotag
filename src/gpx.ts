@@ -1,7 +1,16 @@
 import { readFile } from 'fs/promises';
-import GPX from 'gpx-parser-builder';
-import Waypoint from 'gpx-parser-builder/src/waypoint';
+import { parseStringPromise } from 'xml2js'
 
+
+type Waypoint = {
+  $: {
+    lat: number,
+    lon: number,
+  }
+  ele?: [number]
+  time?: Date
+  extensions: any[]
+}
 
 type GPXData = {
   $: {},
@@ -10,15 +19,7 @@ type GPXData = {
     name: string
     type: string
     trkseg: {
-      trkpt: {
-        $: {
-          lat: number,
-          lon: number,
-        }
-        ele?: [number]
-        time?: Date
-        extensions: any[]
-      }[]
+      trkpt: Waypoint[]
     }[]
   }[]
 }
@@ -35,10 +36,9 @@ interface ParsedGPXData extends GPXData {
 
 
 // Function to load GPX data from a GPX file
-async function loadGPX(gpxPath: string) {
+async function loadGPX(gpxPath: string): Promise<GPXData> {
   const gpxContents = await readFile(gpxPath, 'utf-8')
-  return GPX.parse(gpxContents);
-
+  return (await parseStringPromise(gpxContents)).gpx;
 }
 
 /**

@@ -146,7 +146,7 @@
   dependencies:
     undici-types "~6.19.2"
 
-"@types/xml2js@^0.4.2":
+"@types/xml2js@^0.4.14":
   version "0.4.14"
   resolved "https://registry.yarnpkg.com/@types/xml2js/-/xml2js-0.4.14.tgz#5d462a2a7330345e2309c6b549a183a376de8f9a"
   integrity sha512-4YnrRemBShWRO2QjvUin8ESA41rH+9nQGLUGZV/1IDhi3SL9OhdpNC/MrulTWuptXKwhx/aDxE7toV0f/ypIXQ==
@@ -296,13 +296,6 @@ get-tsconfig@^4.7.5:
   dependencies:
     resolve-pkg-maps "^1.0.0"
 
-gpx-parser-builder@^1.1.1:
-  version "1.1.1"
-  resolved "https://registry.yarnpkg.com/gpx-parser-builder/-/gpx-parser-builder-1.1.1.tgz#e977a0f7dade04b0cfd5dbfa9c664bd1fac99ab7"
-  integrity sha512-oBoGt0p7aVN8JBzsBJTGFWnT1JWl+A/MsfblQiCWfcDJJsCbKWsVX4i6LmWRzssaUXBawVPtZk327VEVSHZtsw==
-  dependencies:
-    isomorphic-xml2js "~0.1"
-
 he@^1.2.0:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/he/-/he-1.2.0.tgz#84ae65fa7eafb165fddb61566ae14baf05664f0f"
@@ -312,14 +305,6 @@ is-fullwidth-code-point@^3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/is-fullwidth-code-point/-/is-fullwidth-code-point-3.0.0.tgz#f116f8064fe90b3f7844a38997c0b75051269f1d"
   integrity sha512-zymm5+u+sCsSWyD9qNaejV3DFvhCKclKdizYaJUuHA83RLjb7nSuGnddCHGv0hk+KY7BMAlsWeK4Ueg6EV6XQg==
-
-isomorphic-xml2js@~0.1:
-  version "0.1.3"
-  resolved "https://registry.yarnpkg.com/isomorphic-xml2js/-/isomorphic-xml2js-0.1.3.tgz#d7fd2b30a28b1f39658e4754cc51bb156856f374"
-  integrity sha512-dIkT2U9ritKVWF/HfHfGwm5tTnlMnknYsv7l12oJlQQgOV2CNV65pX+FHy6HFL9YP8q0JcrlNQAFRJIN2agUmQ==
-  dependencies:
-    "@types/xml2js" "^0.4.2"
-    xml2js "^0.4.19"
 
 luxon@^3.5.0:
   version "3.5.0"
@@ -381,10 +366,10 @@ wrap-ansi@^7.0.0:
     string-width "^4.1.0"
     strip-ansi "^6.0.0"
 
-xml2js@^0.4.19:
-  version "0.4.23"
-  resolved "https://registry.yarnpkg.com/xml2js/-/xml2js-0.4.23.tgz#a0c69516752421eb2ac758ee4d4ccf58843eac66"
-  integrity sha512-ySPiMjM0+pLDftHgXY4By0uswI3SPKLDw/i3UXbnO8M/p28zqexCUoPmQFrYD+/1BzhGJSs2i1ERWKJAtiLrug==
+xml2js@^0.6.2:
+  version "0.6.2"
+  resolved "https://registry.yarnpkg.com/xml2js/-/xml2js-0.6.2.tgz#dd0b630083aa09c161e25a4d0901e2b2a929b499"
+  integrity sha512-T4rieHaC1EXcES0Kxxj4JWgaUQHDk+qwHcYOCFHfiwKz7tOVPLq7Hjq9dM1WCMhylqMEfP7hMcOIChvotiZegA==
   dependencies:
     sax ">=0.6.0"
     xmlbuilder "~11.0.0"
