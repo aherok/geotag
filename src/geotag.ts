@@ -20,7 +20,7 @@ async function getGPXFiles(dir: string) {
 }
 
 // Main function to geotag files
-async function geotagFiles(imageDirectory: string, gpxDir: string, onlyNew: boolean, precision, defaultCoords?: Coords) {
+async function geotagFiles(imageDirectory: string, gpxDir: string, onlyNew: boolean, precision: number, defaultCoords: Coords) {
   const coordsPrint = defaultCoords && defaultCoords.lat + ',' + defaultCoords.lon || '(?)'
   console.log(`Starting geotagger...
  * Working dir   : ${imageDirectory}
@@ -113,7 +113,7 @@ const argv = yargs(hideBin(process.argv))
   .options({
     'gpx-dir': {
       default: null,
-      describe: 'Specify where to look for source GPX files. If none specified, the images directory will be searched through.'
+      describe: 'Specify where to look for source GPX files. If none specified, the images directory will be searched through.',
     },
     'only-new': {
       default: false,
@@ -130,13 +130,13 @@ const argv = yargs(hideBin(process.argv))
       coerce: coords => {
         if (!coords) return null
         const [lat, lon] = coords.split(',').map(parseFloat)
-        return { lat, lon }
+        return { lat, lon } as Coords
       }
     },
   })
-  .argv
+  .parseSync();
 
-const imageDirectory = argv['_'][0]
+const imageDirectory: string = argv['_'][0] as string
 const onlyNew: boolean = argv['onlyNew']
 const precision: number = argv['precision']
 const defaultCoords = argv['defaultCoords']
@@ -152,4 +152,4 @@ if (precision < 60) {
 in lower effectiveness.\n`)
 }
 
-geotagFiles(imageDirectory, gpxDir, onlyNew, precision, defaultCoords);
+geotagFiles(imageDirectory, gpxDir, onlyNew, precision, defaultCoords!);

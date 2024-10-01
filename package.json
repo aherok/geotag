@@ -16,6 +16,6 @@
     "tsx": "^4.19.0"
   },
   "scripts": {
-    "geotag": "tsx geotag.ts"
+    "geotag": "tsx src/geotag.ts"
   }
 }
