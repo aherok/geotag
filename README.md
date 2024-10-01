@@ -7,24 +7,53 @@ DISCLAIMER: This project is provided "as is" without any warranty, express or im
 Although I use the project on my personal data without issues, I take no responsibility for any damage or loss caused by the use of this software. It is the user's responsibility to ensure that the software is used appropriately and safely.
 ```
 
+## Installation
+
+Simply clone the respository.
+
+``` cmd
+git clone git@github.com:aherok/geotag.git
+yarn
+```
+
+After installing development version, run it by invoking a command via npm or yarn:
+
+``` cmd
+yarn geotag <dir>
+```
+
+You can also install the software to the system:
+
+``` cmd
+npm install -g .
+```
+
+Now you can run the command directly:
+
+``` cmd
+geotag <dir>
+```
+
 ## Usage
+
+_Remember to use `yarn geotag` or `geotag` depending on the installation varian chosen._
 
 Quick usage
 
 ``` cmd
-$ geotag <dir-with-photos-and-gpxes>
+geotag <dir>
 ```
 
 Full-fledged example.
 
-* Find photos in `~/photos`
+* Find photos in the `~/photos` dir
 * look for GPX files inside `~/gpx` dir
 * do not modify files that already contain geolocation data
 * allow for 1hr `precision` when looking for precise timestamp
 * if not found particular timestamp, use the default coordinates
 
 ``` cmd
-$ geotag ~/photos/ --gpx-dir ~/gpx/ --only-new 1 --precision 3600 --default-coords 18.2,50,5
+geotag ~/photos/ --gpx-dir ~/gpx/ --only-new 1 --precision 3600 --default-coords 18.2,50,5
 ```
 
 ## Contributing
