@@ -145,6 +145,7 @@ const argv = yargs(hideBin(process.argv))
       describe: 'By default, Exiftool keeps the original file copy by appending `_original` to the file name. If set to true, the copy will not be created.'
     }
   })
+  .boolean('remove-original')
   .parseSync();
 
 const imageDirectory: string = argv['_'][0] as string
