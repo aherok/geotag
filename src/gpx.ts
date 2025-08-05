@@ -60,7 +60,7 @@ export async function loadGPXFiles(paths: string[]): Promise<ParsedGPXData[]> {
       $$: {
         name: track.name,
         startDate: track.trkseg[0].trkpt[0].time!,
-        endDate: track.trkseg[0].trkpt[track.trkseg[0].trkpt.length - 1].time!,
+        endDate: track.trkseg[track.trkseg.length - 1].trkpt[track.trkseg[track.trkseg.length - 1].trkpt.length - 1].time!,
       }
     }
   })
