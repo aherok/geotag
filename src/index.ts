@@ -53,6 +53,7 @@ async function geotagFiles(imageDirectory: string, gpxDir: string, onlyNew: bool
     const updatedList: string[] = []
     const notFoundCoordsList: string[] = []
     const saveDefaultList: string[] = []
+    const unsupportedFormatList: string[] = []
 
     const bar = new cliProgress.SingleBar({}, cliProgress.Presets.shades_grey);
     bar.start(imageFiles.length, 0);
@@ -62,6 +63,12 @@ async function geotagFiles(imageDirectory: string, gpxDir: string, onlyNew: bool
       const imagePath = path.join(imageDirectory, imageFile);
 
       const creationDate = await getImageCreationDate(imagePath)
+      if (!creationDate) { // unsupported / unreadable format
+        unsupportedFormatList.push(imagePath)
+        bar.increment()
+        continue
+      }
+
       const imageCoords = await getImageCoords(imagePath)
 
       // save new coords only if there are no coords already or the onlyNew flag is false
@@ -98,6 +105,9 @@ async function geotagFiles(imageDirectory: string, gpxDir: string, onlyNew: bool
     }
     if (saveDefaultList.length) {
       console.log(`\nSaved default coordinates:\n  - ${saveDefaultList.join('\n  - ')}\n`)
+    }
+    if (unsupportedFormatList.length) {
+      console.log(`\nSkipped unsupported files (no EXIF or unknown format):\n  - ${unsupportedFormatList.join('\n  - ')}\n`)
     }
 
     console.log(`Updated ${updatedList.length} files.`)

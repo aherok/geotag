@@ -7,14 +7,32 @@ export type Coords = {
 }
 type SimpleCoords = [number, number]
 
+/**
+ * Safely parse EXIF. Returns null if file format unsupported ("Unknown file format")
+ * or file unreadable. Re-throws other unexpected errors.
+ */
+async function safeParse(imagePath: string): Promise<any | null> {
+  try {
+    return await exifr.parse(imagePath)
+  } catch (e: any) {
+    const msg = (e && e.message) || ''
+    if (/Unknown file format/i.test(msg)) {
+      return null; // unsupported / corrupt file
+    }
+    // optionally handle other known benign messages here
+    throw e; // propagate truly unexpected errors
+  }
+}
+
 export async function readEXIF(imagePath: string) {
-  return exifr.parse(imagePath)
+  return safeParse(imagePath)
 }
 
 // actually the return type is ExifDateTime .. 
-export async function getImageCreationDate(imagePath: string): Promise<Date> {
-  const exifData = await exifr.parse(imagePath)
-  return exifData.CreateDate as Date
+export async function getImageCreationDate(imagePath: string): Promise<Date | null> {
+  const exifData = await safeParse(imagePath)
+  if (!exifData) return null
+  return exifData.CreateDate as Date || null
 }
 
 /**
@@ -23,7 +41,8 @@ export async function getImageCreationDate(imagePath: string): Promise<Date> {
  * @returns Promise with coords array or null if not found
  */
 export async function getImageCoords(imagePath: string): Promise<SimpleCoords | null> {
-  const exifData = await exifr.parse(imagePath)
+  const exifData = await safeParse(imagePath)
+  if (!exifData) return null
   const [lat, lon] = [exifData.GPSLatitude, exifData.GPSLongitude]
   if (lat && lon) return [lat, lon]
   return null
